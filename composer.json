@@ -1,0 +1,16 @@
+{
+  "name": "cyberduck/lucene",
+	"description": "This is a fork of Silverstripe Lucene plugin that is hosted at Google Code (SS3 Compatible) ",
+	"type": "silverstripe-module",
+	"keywords": ["silverstripe", "lucene", "search"],
+	"authors": [
+	{
+		"name": "Darren Inwood"
+	}
+	],
+	"require":
+	{
+		"silverstripe/framework": "3.1.*",
+		"silverstripe/cms": "3.1.*"
+	}
+}
