@@ -1,5 +1,5 @@
 {
-  "name": "cyberduck/lucene",
+  "name": "asecondwill/lucene",
 	"description": "This is a fork of Silverstripe Lucene plugin that is hosted at Google Code (SS3 Compatible) ",
 	"type": "silverstripe-module",
 	"keywords": ["silverstripe", "lucene", "search"],
