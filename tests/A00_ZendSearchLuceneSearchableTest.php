@@ -2,13 +2,15 @@
 
 // Named strangely so it runs first - Object::remove_extension doesn't seem to work
 
-class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
+class A00_ZendSearchLuceneSearchableTest extends SapphireTest
+{
 
-    static $fixture_file = 'ZendSearchLuceneSearchableTest.yml';
+    public static $fixture_file = 'ZendSearchLuceneSearchableTest.yml';
 
-    public function testEnable() {
+    public function testEnable()
+    {
         // test for baddies in _config.php
-        if ( Object::has_extension('ContentController', 'ZendSearchLuceneContentController') ) {
+        if (Object::has_extension('ContentController', 'ZendSearchLuceneContentController')) {
             echo '<p>Please remove calls to ZendSearchLuceneSearchable::enable() from your _config.php file before running tests.</p>';
             die();
         }
@@ -21,37 +23,37 @@ class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
         Object::remove_extension('File', 'ZendSearchLuceneSearchable');
 
         // Are we fresh?
-        $this->assertFalse( Object::has_extension('ContentController', 'ZendSearchLuceneContentController') );
-		$this->assertFalse( Object::has_extension('SiteConfig', 'ZendSearchLuceneSiteConfig') );
-		$this->assertFalse( Object::has_extension('LeftAndMain', 'ZendSearchLuceneCMSDecorator') );
-        $this->assertFalse( Object::has_extension('SiteTree', 'ZendSearchLuceneSearchable') );
-        $this->assertFalse( Object::has_extension('File', 'ZendSearchLuceneSearchable') );
+        $this->assertFalse(Object::has_extension('ContentController', 'ZendSearchLuceneContentController'));
+        $this->assertFalse(Object::has_extension('SiteConfig', 'ZendSearchLuceneSiteConfig'));
+        $this->assertFalse(Object::has_extension('LeftAndMain', 'ZendSearchLuceneCMSDecorator'));
+        $this->assertFalse(Object::has_extension('SiteTree', 'ZendSearchLuceneSearchable'));
+        $this->assertFalse(Object::has_extension('File', 'ZendSearchLuceneSearchable'));
 
         ZendSearchLuceneSearchable::$pageLength = 10;
-        ZendSearchLuceneSearchable::$alwaysShowPages = 3;   
-        ZendSearchLuceneSearchable::$maxShowPages = 8;   
+        ZendSearchLuceneSearchable::$alwaysShowPages = 3;
+        ZendSearchLuceneSearchable::$maxShowPages = 8;
         ZendSearchLuceneSearchable::$encoding = 'utf-8';
         ZendSearchLuceneSearchable::$cacheDirectory = TEMP_FOLDER;
         ZendSearchLuceneWrapper::$indexName = 'Test';
 
         ZendSearchLuceneSearchable::enable(array());
-        $this->assertTrue( Object::has_extension('ContentController', 'ZendSearchLuceneContentController') );
-		$this->assertTrue( Object::has_extension('SiteConfig', 'ZendSearchLuceneSiteConfig') );
-		$this->assertTrue( Object::has_extension('LeftAndMain', 'ZendSearchLuceneCMSDecorator') );
-        $this->assertFalse( Object::has_extension('SiteTree', 'ZendSearchLuceneSearchable') );
-        $this->assertFalse( Object::has_extension('File', 'ZendSearchLuceneSearchable') );
+        $this->assertTrue(Object::has_extension('ContentController', 'ZendSearchLuceneContentController'));
+        $this->assertTrue(Object::has_extension('SiteConfig', 'ZendSearchLuceneSiteConfig'));
+        $this->assertTrue(Object::has_extension('LeftAndMain', 'ZendSearchLuceneCMSDecorator'));
+        $this->assertFalse(Object::has_extension('SiteTree', 'ZendSearchLuceneSearchable'));
+        $this->assertFalse(Object::has_extension('File', 'ZendSearchLuceneSearchable'));
 
         ZendSearchLuceneSearchable::enable(array('File'));
-        $this->assertFalse( Object::has_extension('SiteTree', 'ZendSearchLuceneSearchable') );
-        $this->assertTrue( Object::has_extension('File', 'ZendSearchLuceneSearchable') );
+        $this->assertFalse(Object::has_extension('SiteTree', 'ZendSearchLuceneSearchable'));
+        $this->assertTrue(Object::has_extension('File', 'ZendSearchLuceneSearchable'));
 
-        ZendSearchLuceneSearchable::enable(array('File','SiteTree'));
-        $this->assertTrue( Object::has_extension('SiteTree', 'ZendSearchLuceneSearchable') );
-        $this->assertTrue( Object::has_extension('File', 'ZendSearchLuceneSearchable') );
-
+        ZendSearchLuceneSearchable::enable(array('File', 'SiteTree'));
+        $this->assertTrue(Object::has_extension('SiteTree', 'ZendSearchLuceneSearchable'));
+        $this->assertTrue(Object::has_extension('File', 'ZendSearchLuceneSearchable'));
     }
 
-    public function testGetSearchedVars() {
+    public function testGetSearchedVars()
+    {
         // Setup
         Object::remove_extension('ContentController', 'ZendSearchLuceneContentController');
         Object::remove_extension('SiteConfig', 'ZendSearchLuceneSiteConfig');
@@ -60,8 +62,8 @@ class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
         Object::remove_extension('File', 'ZendSearchLuceneSearchable');
         
         ZendSearchLuceneSearchable::$pageLength = 10;
-        ZendSearchLuceneSearchable::$alwaysShowPages = 3;   
-        ZendSearchLuceneSearchable::$maxShowPages = 8;   
+        ZendSearchLuceneSearchable::$alwaysShowPages = 3;
+        ZendSearchLuceneSearchable::$maxShowPages = 8;
         ZendSearchLuceneSearchable::$encoding = 'utf-8';
         ZendSearchLuceneSearchable::$cacheDirectory = TEMP_FOLDER;
         ZendSearchLuceneWrapper::$indexName = 'Test';
@@ -69,8 +71,8 @@ class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
         ZendSearchLuceneSearchable::enable();
                 
         $sitetree = DataObject::get_one('Page');
-        $this->assertEquals( 
-            $sitetree->getSearchedVars(), 
+        $this->assertEquals(
+            $sitetree->getSearchedVars(),
             array(
                 0 => 'ID',
                 1 => 'ClassName',
@@ -86,7 +88,7 @@ class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
         );
 
         $file = DataObject::get_one('File');
-        $this->assertEquals( 
+        $this->assertEquals(
             $file->getSearchedVars(),
             array(
                 0 => 'ID',
@@ -98,17 +100,17 @@ class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
                 6 => 'Link'
             )
         );
-
     }
 
-    public function testGetSearchFields() {
+    public function testGetSearchFields()
+    {
         // Setup
         Object::remove_extension('SiteTree', 'ZendSearchLuceneSearchable');
         Object::remove_extension('File', 'ZendSearchLuceneSearchable');
         
         ZendSearchLuceneSearchable::$pageLength = 10;
-        ZendSearchLuceneSearchable::$alwaysShowPages = 3;   
-        ZendSearchLuceneSearchable::$maxShowPages = 8;   
+        ZendSearchLuceneSearchable::$alwaysShowPages = 3;
+        ZendSearchLuceneSearchable::$maxShowPages = 8;
         ZendSearchLuceneSearchable::$encoding = 'utf-8';
         ZendSearchLuceneSearchable::$cacheDirectory = TEMP_FOLDER;
         ZendSearchLuceneWrapper::$indexName = 'Test';
@@ -116,26 +118,27 @@ class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
         ZendSearchLuceneSearchable::enable();
                 
         $sitetree = DataObject::get_one('Page');
-        $this->assertEquals( 
-            $sitetree->getSearchFields(), 
+        $this->assertEquals(
+            $sitetree->getSearchFields(),
             'Title,MenuTitle,Content,MetaTitle,MetaDescription,MetaKeywords'
         );
 
         $file = DataObject::get_one('File');
-        $this->assertEquals( 
+        $this->assertEquals(
             $file->getSearchFields(),
             'Filename,Title,Content'
-        );    
+        );
     }
 
-    public function testGetExtraSearchFields() {
+    public function testGetExtraSearchFields()
+    {
         // Setup
         Object::remove_extension('SiteTree', 'ZendSearchLuceneSearchable');
         Object::remove_extension('File', 'ZendSearchLuceneSearchable');
         
         ZendSearchLuceneSearchable::$pageLength = 10;
-        ZendSearchLuceneSearchable::$alwaysShowPages = 3;   
-        ZendSearchLuceneSearchable::$maxShowPages = 8;   
+        ZendSearchLuceneSearchable::$alwaysShowPages = 3;
+        ZendSearchLuceneSearchable::$maxShowPages = 8;
         ZendSearchLuceneSearchable::$encoding = 'utf-8';
         ZendSearchLuceneSearchable::$cacheDirectory = TEMP_FOLDER;
         ZendSearchLuceneWrapper::$indexName = 'Test';
@@ -143,26 +146,27 @@ class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
         ZendSearchLuceneSearchable::enable();
                 
         $sitetree = DataObject::get_one('Page');
-        $this->assertEquals( 
-            $sitetree->getExtraSearchFields(), 
+        $this->assertEquals(
+            $sitetree->getExtraSearchFields(),
             array('ID', 'ClassName', 'LastEdited')
         );
 
         $file = DataObject::get_one('File');
-        $this->assertEquals( 
+        $this->assertEquals(
             $file->getExtraSearchFields(),
             array('ID', 'ClassName', 'LastEdited')
         );
     }
 
-    public function testOnAfterWrite() {
+    public function testOnAfterWrite()
+    {
         // Setup
         Object::remove_extension('SiteTree', 'ZendSearchLuceneSearchable');
         Object::remove_extension('File', 'ZendSearchLuceneSearchable');
         
         ZendSearchLuceneSearchable::$pageLength = 10;
-        ZendSearchLuceneSearchable::$alwaysShowPages = 3;   
-        ZendSearchLuceneSearchable::$maxShowPages = 8;   
+        ZendSearchLuceneSearchable::$alwaysShowPages = 3;
+        ZendSearchLuceneSearchable::$maxShowPages = 8;
         ZendSearchLuceneSearchable::$encoding = 'utf-8';
         ZendSearchLuceneSearchable::$cacheDirectory = TEMP_FOLDER;
         ZendSearchLuceneWrapper::$indexName = 'Test';
@@ -173,30 +177,31 @@ class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
         ZendSearchLuceneWrapper::getIndex(true);
 
         // There shouldn't be anything with asdf in there
-        $this->assertEquals( 0, count(ZendSearchLuceneWrapper::find('asdf')) );
+        $this->assertEquals(0, count(ZendSearchLuceneWrapper::find('asdf')));
 
         $page = DataObject::get_one('Page');
         $page->Content = 'asdf';
         $page->write();
 
         // There should now be a result
-        $this->assertGreaterThan( 0, count(ZendSearchLuceneWrapper::find('asdf')) );
+        $this->assertGreaterThan(0, count(ZendSearchLuceneWrapper::find('asdf')));
 
         $page->Content = 'foo bar';
         $page->write();
 
         // There should now be no result again
-        $this->assertEquals( 0, count(ZendSearchLuceneWrapper::find('asdf')) );
+        $this->assertEquals(0, count(ZendSearchLuceneWrapper::find('asdf')));
     }
 
-    public function testOnAfterDelete() {
+    public function testOnAfterDelete()
+    {
         // Setup
         Object::remove_extension('SiteTree', 'ZendSearchLuceneSearchable');
         Object::remove_extension('File', 'ZendSearchLuceneSearchable');
         
         ZendSearchLuceneSearchable::$pageLength = 10;
-        ZendSearchLuceneSearchable::$alwaysShowPages = 3;   
-        ZendSearchLuceneSearchable::$maxShowPages = 8;   
+        ZendSearchLuceneSearchable::$alwaysShowPages = 3;
+        ZendSearchLuceneSearchable::$maxShowPages = 8;
         ZendSearchLuceneSearchable::$encoding = 'utf-8';
         ZendSearchLuceneSearchable::$cacheDirectory = TEMP_FOLDER;
         ZendSearchLuceneWrapper::$indexName = 'Test';
@@ -207,20 +212,18 @@ class A00_ZendSearchLuceneSearchableTest extends SapphireTest {
         ZendSearchLuceneWrapper::getIndex(true);
 
         // There shouldn't be anything with asdf in there
-        $this->assertEquals( 0, count(ZendSearchLuceneWrapper::find('asdf')) );
+        $this->assertEquals(0, count(ZendSearchLuceneWrapper::find('asdf')));
 
         $page = DataObject::get_one('Page');
         $page->Content = 'asdf';
         $page->write();
 
         // There should now be a result
-        $this->assertGreaterThan( 0, count(ZendSearchLuceneWrapper::find('asdf')) );
+        $this->assertGreaterThan(0, count(ZendSearchLuceneWrapper::find('asdf')));
 
         $page->delete();
 
         // There should now be no result again
-        $this->assertEquals( 0, count(ZendSearchLuceneWrapper::find('asdf')) );
+        $this->assertEquals(0, count(ZendSearchLuceneWrapper::find('asdf')));
     }
-
 }
-

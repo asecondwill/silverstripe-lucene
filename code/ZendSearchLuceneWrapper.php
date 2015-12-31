@@ -7,7 +7,8 @@
  * @author Darren Inwood <darren.inwood@chrometoaster.com>
  */
 
-class ZendSearchLuceneWrapper {
+class ZendSearchLuceneWrapper
+{
 
     /**
      * The name of the index. 
@@ -46,21 +47,22 @@ class ZendSearchLuceneWrapper {
      *
      * {@link http://zendframework.com/manual/en/zend.search.lucene.searching.html}
      *
-	 * @param   Mixed           $query  String or object to pass to the find() method
-	 *                                  of the index.
+     * @param   Mixed           $query  String or object to pass to the find() method
+     *                                  of the index.
      * @link http://framework.zend.com/apidoc/core/Zend_Search_Lucene/Zend_Search_Lucene_Proxy.html#find
-	 * @return  Array           An array of Zend_Search_Lucene_Search_QueryHit 
-	 *                          objects representing the results of the search.
+     * @return  Array           An array of Zend_Search_Lucene_Search_QueryHit 
+     *                          objects representing the results of the search.
      * @todo Add query logging
      */
-    public static function find($query) {
+    public static function find($query)
+    {
         $index = self::getIndex();
         try {
             $hits = $index->find($query);
-        } catch ( Exception $e) {
+        } catch (Exception $e) {
             $hits = array();
         }
-		return $hits;
+        return $hits;
     }
 
     /**
@@ -90,18 +92,19 @@ class ZendSearchLuceneWrapper {
      * @return Zend_Search_Lucene_Interface
      * @link http://zendframework.com/apidoc/1.10/Zend_Search_Lucene/Index/Zend_Search_Lucene_Interface.html
      */
-    public static function getIndex($forceCreate=false) {
-        if ( !$forceCreate && !empty(self::$index) ) {
+    public static function getIndex($forceCreate=false)
+    {
+        if (!$forceCreate && !empty(self::$index)) {
             return self::$index;
         }
         $indexFilename = ZendSearchLuceneSearchable::$cacheDirectory . DIRECTORY_SEPARATOR . self::$indexName;
-        if ( !$forceCreate && file_exists($indexFilename) ) {
+        if (!$forceCreate && file_exists($indexFilename)) {
             self::$index = Zend_Search_Lucene::open($indexFilename);
         } else {
             self::$index = Zend_Search_Lucene::create($indexFilename);
             // Call all callbacks registered via 
             // ZendSearchLuceneWrapper::addCreateIndexCallback()
-            foreach( self::$createIndexCallbacks as $callback ) {
+            foreach (self::$createIndexCallbacks as $callback) {
                 call_user_func($callback);
             }
         }
@@ -123,11 +126,11 @@ class ZendSearchLuceneWrapper {
      *                                  does not have the ZendSearchLuceneSearchable
      *                                  extension, it is not indexed.
      */
-    public static function index($object) {
+    public static function index($object)
+    {
+        $objectClass = $object->ClassName;
 
-	$objectClass = $object->ClassName;
-
-	if ( ! $objectClass::has_extension('ZendSearchLuceneSearchable') ) {
+        if (! $objectClass::has_extension('ZendSearchLuceneSearchable')) {
             return;
         }
 
@@ -137,28 +140,32 @@ class ZendSearchLuceneWrapper {
         self::delete($object);
 
         $doc = new Zend_Search_Lucene_Document();
-        if ( $object->is_a('File') ) {
+        if ($object->is_a('File')) {
             // Files get text extracted if possible
-            if ( $object->class == 'Folder' ) {
+            if ($object->class == 'Folder') {
                 return;
             }
             // Loop through all file text extractors...
-            foreach( self::getTextExtractorClasses() as $extractor_class ) {
+            foreach (self::getTextExtractorClasses() as $extractor_class) {
                 $extensions = new ReflectionClass($extractor_class);
                 $extensions = $extensions->getStaticPropertyValue('extensions');
-                if ( ! in_array(strtolower(File::get_file_extension($object->Filename)), $extensions) ) continue;
+                if (! in_array(strtolower(File::get_file_extension($object->Filename)), $extensions)) {
+                    continue;
+                }
                 // Try any that support the given file extension
                 $content = call_user_func(
-                    array($extractor_class, 'extract'), 
+                    array($extractor_class, 'extract'),
                     Director::baseFolder().'/'.$object->Filename
                 );
-                if ( ! $content ) continue;
+                if (! $content) {
+                    continue;
+                }
                 // Use the first extractor we find that gives us content.
                 $doc = new Zend_Search_Lucene_Document();
                 $doc->addField(
                     Zend_Search_Lucene_Field::Text(
                         'body',  // We're storing text in files in a field called 'body'.
-                        $content, 
+                        $content,
                         ZendSearchLuceneSearchable::$encoding
                     )
                 );
@@ -167,17 +174,19 @@ class ZendSearchLuceneWrapper {
         }
         // Index the fields we've specified in the config
         $fields = array_merge($object->getExtraSearchFields(), $object->getSearchFields());
-        foreach( $fields as $fieldName ) {
+        foreach ($fields as $fieldName) {
             // Normal database field or function call
             $field = self::getZendField($object, $fieldName);
-            if ( ! $field ) continue;
+            if (! $field) {
+                continue;
+            }
             $doc->addField($field);
         }
 
         // Add URL if we have a function called Link().  We didn't use the 
         // extraSearchFields mechanism for this because it's not a property on 
         // all objects, so this is the most sensible place for it.
-        if ( method_exists(get_class($object), 'Link') && ! in_array('Link', $fields) ) {
+        if (method_exists(get_class($object), 'Link') && ! in_array('Link', $fields)) {
             $doc->addField(Zend_Search_Lucene_Field::UnIndexed('Link', $object->Link()));
         }
 
@@ -195,8 +204,9 @@ class ZendSearchLuceneWrapper {
      * @static
      * @return  Array   An array of strings containing classnames.
      */
-    private static function getTextExtractorClasses() {
-        if ( ! self::$extractorClasses ) {
+    private static function getTextExtractorClasses()
+    {
+        if (! self::$extractorClasses) {
             $all_classes = ClassInfo::subclassesFor('ZendSearchLuceneTextExtractor');
             usort(
                 $all_classes,
@@ -221,16 +231,18 @@ class ZendSearchLuceneWrapper {
      *                                  does not have the ZendSearchLuceneSearchable
      *                                  extension, it is not deleted.
      */
-    public static function delete($object) {
+    public static function delete($object)
+    {
+        $objectClass = $object->ClassName;
 
-    $objectClass = $object->ClassName;
-
-    if ( ! $objectClass::has_extension('ZendSearchLuceneSearchable') ) {
+        if (! $objectClass::has_extension('ZendSearchLuceneSearchable')) {
             return;
         }
         $index = self::getIndex();
         foreach ($index->find('ObjectID:'.$object->ID) as $hit) {
-            if ( $hit->ClassName != $object->ClassName ) continue;
+            if ($hit->ClassName != $object->ClassName) {
+                continue;
+            }
             $index->delete($hit->id);
         }
         $index->commit();
@@ -265,31 +277,34 @@ class ZendSearchLuceneWrapper {
      * @param   String      $fieldName  The name of the field to fetch a Zend field for.
      * @return  Zend_Search_Lucene_Field
      */
-    private static function getZendField($object, $fieldName) {
+    private static function getZendField($object, $fieldName)
+    {
         $encoding = ZendSearchLuceneSearchable::$encoding;
         $config = $object->getLuceneFieldConfig($fieldName);
 
         // Recurses through dot-notation.
         $value = self::getFieldValue($object, $fieldName);
 
-        if ( $config['content_filter'] ) {
+        if ($config['content_filter']) {
             // Run through the content filter, if we have one.
             $value = call_user_func($config['content_filter'], $value);
         }
 
-        if ( $config['name'] ) {
+        if ($config['name']) {
             $fieldName = $config['name'];
         }
 
-        if ( $config['type'] == 'unstored' ) {
+        if ($config['type'] == 'unstored') {
             return Zend_Search_Lucene_Field::UnStored($fieldName, $value, $encoding);
         }
-        if ( $config['type'] == 'unindexed' ) {
+        if ($config['type'] == 'unindexed') {
             return Zend_Search_Lucene_Field::UnIndexed($fieldName, $value, $encoding);
         }
-        if ( $config['type'] == 'keyword' ) {
+        if ($config['type'] == 'keyword') {
             $keywordFieldName = $fieldName;
-            if ( $keywordFieldName == 'ID' ) $keywordFieldName = 'ObjectID'; // Don't use 'ID' as it's used by Zend Lucene
+            if ($keywordFieldName == 'ID') {
+                $keywordFieldName = 'ObjectID';
+            } // Don't use 'ID' as it's used by Zend Lucene
             return Zend_Search_Lucene_Field::Keyword($keywordFieldName, $value, $encoding);
         }
         // Default - index and store as text
@@ -304,9 +319,10 @@ class ZendSearchLuceneWrapper {
      * If the fieldname can't be resolved for the given object, returns an empty
      * string.
      */
-    public static function getFieldValue($object, $fieldName) {
-        if ( strpos($fieldName, '.') === false ) {
-            if ( $object->hasMethod($fieldName) ) {
+    public static function getFieldValue($object, $fieldName)
+    {
+        if (strpos($fieldName, '.') === false) {
+            if ($object->hasMethod($fieldName)) {
                 // Method on object
                 return $object->$fieldName();
             } else {
@@ -317,26 +333,26 @@ class ZendSearchLuceneWrapper {
         // Using dot notation
         list($baseFieldName, $relationFieldName) = explode('.', $fieldName, 2);
         // has_one
-        if ( in_array($baseFieldName, array_keys($object->has_one())) ) {
+        if (in_array($baseFieldName, array_keys($object->has_one()))) {
             $field = $object->getComponent($baseFieldName);
             return self::getFieldValue($field, $relationFieldName);
         }
         // has_many
-        if ( in_array($baseFieldName, array_keys($object->has_many())) ) {
+        if (in_array($baseFieldName, array_keys($object->has_many()))) {
             // loop through and get string values for all components
             $tmp = '';
             $components = $object->getComponents($baseFieldName);
-            foreach( $components as $component ) {
+            foreach ($components as $component) {
                 $tmp .= self::getFieldValue($component, $relationFieldName)."\n";
             }
             return $tmp;
         }
         // many_many
-        if ( in_array($baseFieldName, array_keys($object->many_many())) ) {
+        if (in_array($baseFieldName, array_keys($object->many_many()))) {
             // loop through and get string values for all components
             $tmp = '';
             $components = $object->getManyManyComponents($baseFieldName);
-            foreach( $components as $component ) {
+            foreach ($components as $component) {
                 $tmp .= self::getFieldValue($component, $relationFieldName)."\n";
             }
             return $tmp;
@@ -360,7 +376,8 @@ class ZendSearchLuceneWrapper {
      * @param String|Array $callback A PHP callback to call whenever the Search 
      *                               index is created.
      */
-    public static function addCreateIndexCallback($callback) {
+    public static function addCreateIndexCallback($callback)
+    {
         self::$createIndexCallbacks[] = $callback;
     }
 
@@ -380,7 +397,8 @@ class ZendSearchLuceneWrapper {
      *
      * @return  Integer     Returns the number of documents that were indexed.
      */
-    public static function rebuildIndex() {
+    public static function rebuildIndex()
+    {
         singleton('QueuedJobService')->queueJob(
             new ZendSearchLuceneReindexJob()
         );
@@ -390,31 +408,36 @@ class ZendSearchLuceneWrapper {
     /**
      * Returns a data array of all indexable DataObjects.  For use when reindexing.
      */
-    public static function getAllIndexableObjects($className='DataObject') {
+    public static function getAllIndexableObjects($className='DataObject')
+    {
         // We'll estimate that we'll be indexing the same number of things as last time...
         $possibleClasses = ClassInfo::subclassesFor($className);
         $extendedClasses = array();
-        foreach( $possibleClasses as $possibleClass ) {
-            if ( $possibleClass::has_extension('ZendSearchLuceneSearchable') ) {
+        foreach ($possibleClasses as $possibleClass) {
+            if ($possibleClass::has_extension('ZendSearchLuceneSearchable')) {
                 $extendedClasses[] = $possibleClass;
             }
         }
         $indexed = array();
-        foreach( $extendedClasses as $className ) {
+        foreach ($extendedClasses as $className) {
             $config = singleton($className)->getLuceneClassConfig();
             $objects = DataObject::get($className, $config['index_filter']);
-            if ( $objects === null ) continue;
-            foreach( $objects as $object ) {
+            if ($objects === null) {
+                continue;
+            }
+            foreach ($objects as $object) {
                 // SiteTree objects only get indexed if they're published...
-                if ( $object->is_a('SiteTree') && ! $object->getExistsOnLive() ) continue;
+                if ($object->is_a('SiteTree') && ! $object->getExistsOnLive()) {
+                    continue;
+                }
                 // Only re-index if we haven't already indexed this DataObject
-                if ( ! array_key_exists($object->ClassName.' '.$object->ID, $indexed) ) {
+                if (! array_key_exists($object->ClassName.' '.$object->ID, $indexed)) {
                     $indexed[$object->ClassName.' '.$object->ID] = array(
-                        $object->ClassName, 
+                        $object->ClassName,
                         $object->ID
                     );
                 }
-                if ( $object->is_a('SiteTree') && $object->Children()->Count() > 0){
+                if ($object->is_a('SiteTree') && $object->Children()->Count() > 0) {
                     $indexed = self::getChildren($object, $indexed);
                 }
             }
@@ -422,21 +445,19 @@ class ZendSearchLuceneWrapper {
         return $indexed;
     }
 
-    protected static function getChildren($object, $indexed = array()){
-        foreach($object->Children() as $child){
-            if(!array_key_exists($child->ClassName.' '.$child->ID, $indexed)){
+    protected static function getChildren($object, $indexed = array())
+    {
+        foreach ($object->Children() as $child) {
+            if (!array_key_exists($child->ClassName.' '.$child->ID, $indexed)) {
                 $indexed[$child->ClassName.' '.$child->ID] = array(
                     $child->ClassName,
                     $child->ID
                 );
             }
-            if($child->Children()->Count() > 0) {
+            if ($child->Children()->Count() > 0) {
                 $indexed = self::getChildren($child, $indexed);
             }
         }
         return $indexed;
     }
-
 }
-
-

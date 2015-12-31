@@ -24,7 +24,8 @@
  * @package lucene-silverstripe-module
  * @author Darren Inwood <darren.inwood@chrometoaster.com>
  */
-class CatdocXlsExtractor extends ZendSearchLuceneTextExtractor {
+class CatdocXlsExtractor extends ZendSearchLuceneTextExtractor
+{
 
     /**
      * The extensions that can be handled by this text extractor.
@@ -39,7 +40,7 @@ class CatdocXlsExtractor extends ZendSearchLuceneTextExtractor {
      * path.
      * @static
      */
-    public static $binary_location; 
+    public static $binary_location;
     
     /**
      * Returns a string containing the text in the given Microsoft Excel XLS
@@ -48,10 +49,15 @@ class CatdocXlsExtractor extends ZendSearchLuceneTextExtractor {
      * @param   String  $filename   Full filesystem path to the file to process.
      * @return  String  Text extracted from the file.
      */
-    public static function extract($filename) {
-        if ( ! file_exists($filename) ) return '';
+    public static function extract($filename)
+    {
+        if (! file_exists($filename)) {
+            return '';
+        }
         $binary = self::get_binary_path();
-        if ( !$binary ) return '';
+        if (!$binary) {
+            return '';
+        }
         return shell_exec($binary.' -q0 '.escapeshellarg($filename));
     }
 
@@ -63,19 +69,18 @@ class CatdocXlsExtractor extends ZendSearchLuceneTextExtractor {
      * @return  String|Boolean  Returns the path to the xls2csv binary, or 
      *                          boolean false if it cannot be found.
      */
-    protected static function get_binary_path() {
-        if ( self::$binary_location ) return self::$binary_location;
-        if ( defined('XLS2CSV_BINARY_LOCATION') ) {
+    protected static function get_binary_path()
+    {
+        if (self::$binary_location) {
+            return self::$binary_location;
+        }
+        if (defined('XLS2CSV_BINARY_LOCATION')) {
             self::$binary_location = XLS2CSV_BINARY_LOCATION;
-        } else if ( file_exists('/usr/bin/xls2csv') ) {
+        } elseif (file_exists('/usr/bin/xls2csv')) {
             self::$binary_location = '/usr/bin/xls2csv';
-        } else if ( file_exists('/usr/local/bin/xls2csv') ) {
+        } elseif (file_exists('/usr/local/bin/xls2csv')) {
             self::$binary_location = '/usr/local/bin/xls2csv';
         }
-        return self::$binary_location;        
+        return self::$binary_location;
     }
-
-
 }
-
-

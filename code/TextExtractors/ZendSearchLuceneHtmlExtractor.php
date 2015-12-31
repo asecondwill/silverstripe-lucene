@@ -7,7 +7,8 @@
  * @package lucene-silverstripe-module
  * @author Darren Inwood <darren.inwood@chrometoaster.com>
  */
-class ZendSearchLuceneHtmlExtractor extends ZendSearchLuceneTextExtractor {
+class ZendSearchLuceneHtmlExtractor extends ZendSearchLuceneTextExtractor
+{
 
     /**
      * The extensions that can be handled by this text extractor.
@@ -24,11 +25,14 @@ class ZendSearchLuceneHtmlExtractor extends ZendSearchLuceneTextExtractor {
      * @param   String  $filename   Full filesystem path to the file to process.
      * @return  String  Text extracted from the file.
      */
-    public static function extract($filename) {
-        if ( ! file_exists($filename) ) return '';
+    public static function extract($filename)
+    {
+        if (! file_exists($filename)) {
+            return '';
+        }
         try {
             $doc = Zend_Search_Lucene_Document_Html::loadHTMLFile(
-                $filename, 
+                $filename,
                 true
             );
         } catch (Exception $e) {
@@ -36,7 +40,4 @@ class ZendSearchLuceneHtmlExtractor extends ZendSearchLuceneTextExtractor {
         }
         return $doc->body;
     }
-
 }
-
-
