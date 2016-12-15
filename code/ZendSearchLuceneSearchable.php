@@ -27,19 +27,20 @@
  * @author Darren Inwood <darren.inwood@chrometoaster.com>
  */
 
-class ZendSearchLuceneSearchable extends DataExtension {
+class ZendSearchLuceneSearchable extends DataExtension
+{
 
     /**
      * Number of results per pagination page 
      * @static
      */
-    public static $pageLength = 10;        
+    public static $pageLength = 10;
 
     /**
      * Always show this many pages in pagination (can be zero)
      * @static
      */
-    public static $alwaysShowPages = 3;    
+    public static $alwaysShowPages = 3;
 
     /** 
      * Maximum number of pages shown in pagination (ellipsis are used to indicate more pages)
@@ -81,9 +82,9 @@ class ZendSearchLuceneSearchable extends DataExtension {
      * @static
      */
     protected static $defaultColumns = array(
-		'SiteTree' => 'Title,MenuTitle,Content,MetaTitle,MetaDescription,MetaKeywords',
-		'File' => 'Filename,Title,Content'
-	);
+        'SiteTree' => 'Title,MenuTitle,Content,MetaTitle,MetaDescription,MetaKeywords',
+        'File' => 'Filename,Title,Content'
+    );
 
     /**
      * Fields which should be indexed as 'unstored' by default.
@@ -107,7 +108,7 @@ class ZendSearchLuceneSearchable extends DataExtension {
      * Fields which should be indexed as 'keyword' by default.
      * @access private
      * @static
-     */    
+     */
     protected static $keyword_fields = array(
         'ID', 'ClassName'
     );
@@ -193,59 +194,68 @@ class ZendSearchLuceneSearchable extends DataExtension {
      *
      * '"ID" IN ( SELECT "ID" FROM "This" LEFT JOIN "Other" ON "This"."ID" = "Other"."ThisID" WHERE "Other"."ThisID" IS NOT NULL )'
      */
-	public function __construct($fieldConfig=null, $classConfig=null) {
-		parent::__construct();
-		$this->_fieldConfig = $fieldConfig;
-		$this->_classConfig = $classConfig;
-	}
+    public function __construct($fieldConfig=null, $classConfig=null)
+    {
+        parent::__construct();
+        $this->_fieldConfig = $fieldConfig;
+        $this->_classConfig = $classConfig;
+    }
 
     /**
      * Set up the config for each instantiated object for this class.
      * @access private
      */
-    private function setLuceneFieldConfig($config) {
+    private function setLuceneFieldConfig($config)
+    {
         $this->fieldConfig = array();
-        if ( ! $config ) return;
+        if (! $config) {
+            return;
+        }
 
         // Is it a JSON-encoded array?
         $json = json_decode($config, true);
-        if ( is_array($json) ) $config = $json;
+        if (is_array($json)) {
+            $config = $json;
+        }
 
         // Is is a comma-separated string?
-        if ( ! is_array($config) ) {
+        if (! is_array($config)) {
             $config = explode(',', $config);
-            if ( is_array($config) ) $config = array_flip($config);
+            if (is_array($config)) {
+                $config = array_flip($config);
+            }
         }
 
         // Is the config bad?
-	    if ( ! is_array($config) ) {
-	        user_error('Your Lucene field config for the class '.$this->owner->class
-	            .' was bad. It needs to be a JSON encoded array, or a comma-separated'
-	            .' list of fieldnames.  See the documentation for details.');
-	    }
+        if (! is_array($config)) {
+            user_error('Your Lucene field config for the class '.$this->owner->class
+                .' was bad. It needs to be a JSON encoded array, or a comma-separated'
+                .' list of fieldnames.  See the documentation for details.');
+        }
 
         // Do we have ObjectID in there?  Users can't use that, as it's how we track
         // the ID field internally.
-         if ( 
-            array_key_exists('ObjectID', $config) 
+         if (
+            array_key_exists('ObjectID', $config)
             && (
-                !is_array($config['ObjectID']) 
+                !is_array($config['ObjectID'])
                 || !isset($config['ObjectID']['name'])
                 || $config['ObjectID']['name'] == 'ObjectID'
             )
          ) {
-            user_error('ObjectID is reserved for internal Lucene use. Try configuring '
+             user_error('ObjectID is reserved for internal Lucene use. Try configuring '
             .'that field to be indexed using a different name via the \'name\' config option. '
             .'See the documentation for details.');
-            
          }
 
         // Also configure extra search fields using default config options
         $config = array_merge(array_flip($this->getExtraSearchFields()), $config);
 
-	    // Set up default info for each field if nothing was provided.
-	    foreach( $config as $fieldName => $data ) {
-            if ( ! is_array($data) ) $data = array();
+        // Set up default info for each field if nothing was provided.
+        foreach ($config as $fieldName => $data) {
+            if (! is_array($data)) {
+                $data = array();
+            }
             $tmp = array(
                 'name' => $fieldName,
                 'type' => false,
@@ -253,21 +263,23 @@ class ZendSearchLuceneSearchable extends DataExtension {
             );
             $tmp = array_merge($tmp, $data);
             // Default to unstored indexing
-            if ( !$tmp['type'] && in_array($fieldName, self::$unstored_fields) ) {
+            if (!$tmp['type'] && in_array($fieldName, self::$unstored_fields)) {
                 $tmp['type'] = 'unstored';
             }
             // Default to unindexed indexing
-            if ( !$tmp['type'] && in_array($fieldName, self::$unindexed_fields) ) {
+            if (!$tmp['type'] && in_array($fieldName, self::$unindexed_fields)) {
                 $tmp['type'] = 'unindexed';
             }
             // Default to keyword indexing
-            if ( !$tmp['type'] && in_array($fieldName, self::$keyword_fields) ) {
+            if (!$tmp['type'] && in_array($fieldName, self::$keyword_fields)) {
                 $tmp['type'] = 'keyword';
             }
             // Default to text indexing
-            if ( !$tmp['type'] ) $tmp['type'] = 'text';
+            if (!$tmp['type']) {
+                $tmp['type'] = 'text';
+            }
             $this->fieldConfig[$fieldName] = $tmp;
-	    }
+        }
     }
 
     /**
@@ -282,9 +294,12 @@ class ZendSearchLuceneSearchable extends DataExtension {
      * )
      * </code>
      */
-    public function getLuceneFieldConfig($fieldName) {
-        if ( $this->fieldConfig === null ) $this->setLuceneFieldConfig($this->_fieldConfig);
-        if ( array_key_exists($fieldName, $this->fieldConfig) ) {
+    public function getLuceneFieldConfig($fieldName)
+    {
+        if ($this->fieldConfig === null) {
+            $this->setLuceneFieldConfig($this->_fieldConfig);
+        }
+        if (array_key_exists($fieldName, $this->fieldConfig)) {
             return $this->fieldConfig[$fieldName];
         }
         user_error("You asked for the config for a field that hasn't had its config set up.");
@@ -294,27 +309,32 @@ class ZendSearchLuceneSearchable extends DataExtension {
      * Set up search configuration for the class.
      * @access private
      */
-    private function setLuceneClassConfig($config) {
+    private function setLuceneClassConfig($config)
+    {
         // Default to filtering out unpublished and unsearchable SiteTree objects
         $this->classConfig = array(
-            'index_filter' => $this->owner->is_a('SiteTree') 
+            'index_filter' => $this->owner->is_a('SiteTree')
                 ? "\"ShowInSearch\" = 1"
                 : ''
         );
-        if ( ! $config ) return;
+        if (! $config) {
+            return;
+        }
 
         // Is it a JSON-encoded array?
         $json = json_decode($config, true);
-        if ( is_array($json) ) $config = $json;
+        if (is_array($json)) {
+            $config = $json;
+        }
 
         // Is the config bad?
-	    if ( ! is_array($config) ) {
-	        user_error(
-	            'Your Lucene class config for the class '.$this->owner->class
-	            .' was bad. It needs to be a JSON encoded array.  See the '
-	            .'documentation for details.'
-	        );
-	    }
+        if (! is_array($config)) {
+            user_error(
+                'Your Lucene class config for the class '.$this->owner->class
+                .' was bad. It needs to be a JSON encoded array.  See the '
+                .'documentation for details.'
+            );
+        }
     
         $this->classConfig = $config;
     }
@@ -323,64 +343,75 @@ class ZendSearchLuceneSearchable extends DataExtension {
      * Returns the class config array.
      * Should be called as singleton('ClassName')->getLuceneClassConfig().
      */
-    public function getLuceneClassConfig() {
-        if ( $this->classConfig === null ) $this->setLuceneClassConfig($this->_classConfig);
+    public function getLuceneClassConfig()
+    {
+        if ($this->classConfig === null) {
+            $this->setLuceneClassConfig($this->_classConfig);
+        }
         return $this->classConfig;
     }
 
-	/**
-	 * Enable the default configuration of Zend Search Lucene searching on the 
-	 * given data classes.
-	 * 
-	 * @param   Array   $searchableClasses  An array of classnames to scan.  Can 
-	 *                                      choose from SiteTree and/or File.
-	 *                                      To not scan any classes, for example
-	 *                                      if we will define custom fields to scan,
-	 *                                      pass in an empty array.
-	 *                                      Defaults to scan SiteTree and File.
-	 */
-	public static function enable($searchableClasses = array('SiteTree', 'File')) {
+    /**
+     * Enable the default configuration of Zend Search Lucene searching on the 
+     * given data classes.
+     * 
+     * @param   Array   $searchableClasses  An array of classnames to scan.  Can 
+     *                                      choose from SiteTree and/or File.
+     *                                      To not scan any classes, for example
+     *                                      if we will define custom fields to scan,
+     *                                      pass in an empty array.
+     *                                      Defaults to scan SiteTree and File.
+     */
+    public static function enable($searchableClasses = array('SiteTree', 'File'))
+    {
         // We can't enable the search engine if we don't have QueuedJobs installed.
-        if ( ! ClassInfo::exists('QueuedJobService') ) {
-            die('<strong>'._t('ZendSearchLucene.ERROR','Error').'</strong>: '
+        if (! ClassInfo::exists('QueuedJobService')) {
+            die('<strong>'._t('ZendSearchLucene.ERROR', 'Error').'</strong>: '
                 ._t('ZendSearchLucene.QueuedJobsRequired',
                 'Lucene requires the Queued jobs module.  See '
                 .'<a href="http://www.silverstripe.org/queued-jobs-module/">'
                 .'http://www.silverstripe.org/queued-jobs-module/</a>.')
             );
         }
-		if(!is_array($searchableClasses)) $searchableClasses = array($searchableClasses);
-		foreach($searchableClasses as $class) {
-			if(isset(self::$defaultColumns[$class])) {
-				Object::add_extension($class, "ZendSearchLuceneSearchable('".self::$defaultColumns[$class]."')");
-			} else {
-				user_error("I don't know the default search columns for class '$class'");
-				return;
-			}
-		}
-		Object::add_extension('ContentController', 'ZendSearchLuceneContentController');
-		DataObject::add_extension('SiteConfig', 'ZendSearchLuceneSiteConfig');
-		Object::add_extension('LeftAndMain', 'ZendSearchLuceneCMSDecorator');
-		Object::add_extension('StringField', 'ZendSearchLuceneTextHighlightDecorator');
-		// Set up default encoding and analyzer
+        if (!is_array($searchableClasses)) {
+            $searchableClasses = array($searchableClasses);
+        }
+        foreach ($searchableClasses as $class) {
+            if (isset(self::$defaultColumns[$class])) {
+                Object::add_extension($class, "ZendSearchLuceneSearchable('".self::$defaultColumns[$class]."')");
+            } else {
+                user_error("I don't know the default search columns for class '$class'");
+                return;
+            }
+        }
+        Object::add_extension('ContentController', 'ZendSearchLuceneContentController');
+        DataObject::add_extension('SiteConfig', 'ZendSearchLuceneSiteConfig');
+        Object::add_extension('LeftAndMain', 'ZendSearchLuceneCMSDecorator');
+        Object::add_extension('StringField', 'ZendSearchLuceneTextHighlightDecorator');
+        // Set up default encoding and analyzer
         Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding(ZendSearchLuceneSearchable::$encoding);
-        Zend_Search_Lucene_Analysis_Analyzer::setDefault( 
-            new StandardAnalyzer_Analyzer_Standard_English() 
+        Zend_Search_Lucene_Analysis_Analyzer::setDefault(
+            new StandardAnalyzer_Analyzer_Standard_English()
         );
-	}
+    }
 
     /**
      * Indexes the object after it has been written to the database.
      */
-    public function onAfterWrite() {
+    public function onAfterWrite()
+    {
         // Obey index filter rules
         $objs = ZendSearchLuceneWrapper::getAllIndexableObjects($this->owner->ClassName);
         ZendSearchLuceneWrapper::delete($this->owner);
-        foreach( $objs as $obj ) {
+        foreach ($objs as $obj) {
             // $obj is an array with ClassName and ID of the indexable object
-            if ( ! is_array($obj) ) continue;
-            if ( ! is_object($this->owner) ) continue;
-            if ( $obj[0] == $this->owner->class && $obj[1] == $this->owner->ID ) {
+            if (! is_array($obj)) {
+                continue;
+            }
+            if (! is_object($this->owner)) {
+                continue;
+            }
+            if ($obj[0] == $this->owner->class && $obj[1] == $this->owner->ID) {
                 ZendSearchLuceneWrapper::index($this->owner);
             }
         }
@@ -390,7 +421,8 @@ class ZendSearchLuceneSearchable extends DataExtension {
     /**
      * Removes the object from the search index after it has been deleted.
      */
-    function onAfterDelete() {
+    public function onAfterDelete()
+    {
         ZendSearchLuceneWrapper::delete($this->owner);
         parent::onAfterDelete();
     }
@@ -401,7 +433,8 @@ class ZendSearchLuceneSearchable extends DataExtension {
      * @return  Array   An array of strings, each being the name of a field that 
      *                  is searched.
      */
-    public function getSearchedVars() {
+    public function getSearchedVars()
+    {
         return array_merge(
             self::$extraSearchFields,
             $this->getSearchFields(),
@@ -415,8 +448,11 @@ class ZendSearchLuceneSearchable extends DataExtension {
      * @return  Array   An array of strings, each being the name of a field that
      *                  is indexed.
      */
-    public function getSearchFields() {
-        if ( $this->fieldConfig === null ) $this->setLuceneFieldConfig($this->_fieldConfig);
+    public function getSearchFields()
+    {
+        if ($this->fieldConfig === null) {
+            $this->setLuceneFieldConfig($this->_fieldConfig);
+        }
         return array_keys($this->fieldConfig);
     }
 
@@ -427,7 +463,8 @@ class ZendSearchLuceneSearchable extends DataExtension {
      * @return  Array   An array of strings, each being the name of a field that 
      *                  is indexed but not searched.
      */
-    public function getExtraSearchFields() {
+    public function getExtraSearchFields()
+    {
         return self::$extraSearchFields;
     }
 
@@ -440,8 +477,11 @@ class ZendSearchLuceneSearchable extends DataExtension {
      * ZendSearchLuceneSearchable::$reindexOnDevBuild = false;
      * </code>
      */
-    public function requireDefaultRecords() {
-        if ( ! self::$reindexOnDevBuild ) return;
+    public function requireDefaultRecords()
+    {
+        if (! self::$reindexOnDevBuild) {
+            return;
+        }
         ZendSearchLuceneWrapper::rebuildIndex();
         echo '<li><em>'
             . _t('ZendSearchLucene.RebuildSuccessMessage', 'A Lucene search index rebuild job has been added to the Jobs queue.')
@@ -449,6 +489,4 @@ class ZendSearchLuceneSearchable extends DataExtension {
         // Only run once
         self::$reindexOnDevBuild = false;
     }
-
 }
-

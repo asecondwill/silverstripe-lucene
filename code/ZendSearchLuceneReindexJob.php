@@ -7,17 +7,21 @@
  * @package lucene-silverstripe-module
  * @author Darren Inwood <darren.inwood@chrometoaster.com>
  */
-class ZendSearchLuceneReindexJob extends AbstractQueuedJob implements QueuedJob {
+class ZendSearchLuceneReindexJob extends AbstractQueuedJob implements QueuedJob
+{
 
-    public function getTitle() {
+    public function getTitle()
+    {
         return _t('ZendSearchLucene.ReindexJobTitle', 'Rebuild the Lucene search engine index');
     }
 
-    public function getSignature() {
+    public function getSignature()
+    {
         return 'ZendSearchLuceneReindexJob';
     }
 
-    public function setup() {
+    public function setup()
+    {
         // Wipe current index
         ZendSearchLuceneWrapper::getIndex(true);
         $indexed = ZendSearchLuceneWrapper::getAllIndexableObjects();
@@ -25,32 +29,30 @@ class ZendSearchLuceneReindexJob extends AbstractQueuedJob implements QueuedJob 
         $this->totalSteps = count($indexed);
     }
 
-    public function process() {
-		$remainingDocuments = $this->remainingDocuments;
+    public function process()
+    {
+        $remainingDocuments = $this->remainingDocuments;
 
-		// if there's no more, we're done!
-		if (!count($remainingDocuments)) {
-			$this->isComplete = true;
-			return;
-		}
-		
-		$this->currentStep++;
-		
-		$item = array_shift($remainingDocuments);
-	
-		$obj = DataObject::get_by_id($item[0], $item[1]);
+        // if there's no more, we're done!
+        if (!count($remainingDocuments)) {
+            $this->isComplete = true;
+            return;
+        }
+        
+        $this->currentStep++;
+        
+        $item = array_shift($remainingDocuments);
+    
+        $obj = DataObject::get_by_id($item[0], $item[1]);
 
         ZendSearchLuceneWrapper::index($obj);
 
-		// and now we store the new list of remaining children
-		$this->remainingDocuments = $remainingDocuments;
+        // and now we store the new list of remaining children
+        $this->remainingDocuments = $remainingDocuments;
 
-		if (!count($remainingDocuments)) {
-			$this->isComplete = true;
-			return;
-		}    
+        if (!count($remainingDocuments)) {
+            $this->isComplete = true;
+            return;
+        }
     }
-
 }
-
-

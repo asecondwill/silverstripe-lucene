@@ -7,7 +7,8 @@
  * @package lucene-silverstripe-module
  * @author Darren Inwood <darren.inwood@chrometoaster.com>
  */
-abstract class ZendSearchLuceneTextExtractor {
+abstract class ZendSearchLuceneTextExtractor
+{
  
     /**
      * An array of strings representing file extensions that can be handled by 
@@ -16,7 +17,7 @@ abstract class ZendSearchLuceneTextExtractor {
      * files.
      * @static
      */
-    public static $extensions = array(); 
+    public static $extensions = array();
 
     /**
      * Controls the order in which text extractor classes are tried for a 
@@ -35,7 +36,4 @@ abstract class ZendSearchLuceneTextExtractor {
      * @return  String  Text extracted from the file.
      */
     abstract public static function extract($filename);
- 
- 
 }
-

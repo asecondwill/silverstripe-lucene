@@ -34,7 +34,8 @@
  * @package lucene-silverstripe-module
  * @author Darren Inwood <darren.inwood@chrometoaster.com>
  */
-class PdfDocumentExtractor extends ZendSearchLuceneTextExtractor {
+class PdfDocumentExtractor extends ZendSearchLuceneTextExtractor
+{
 
     /**
      * The extensions that can be handled by this text extractor.
@@ -49,7 +50,7 @@ class PdfDocumentExtractor extends ZendSearchLuceneTextExtractor {
      * path.
      * @static
      */
-    public static $binary_location; 
+    public static $binary_location;
 
     /**
      * Returns a string containing the text in the given TXT document.
@@ -57,9 +58,12 @@ class PdfDocumentExtractor extends ZendSearchLuceneTextExtractor {
      * @param   String  $filename   Full filesystem path to the file to process.
      * @return  String  Text extracted from the file.
      */
-    public static function extract($filename) {
-        if ( ! file_exists($filename) ) return '';
-        if ( trim(shell_exec('which pdftotext')) !== '' ) {
+    public static function extract($filename)
+    {
+        if (! file_exists($filename)) {
+            return '';
+        }
+        if (trim(shell_exec('which pdftotext')) !== '') {
             return self::commandline($filename);
         }
         return self::pdf2text($filename);
@@ -69,27 +73,29 @@ class PdfDocumentExtractor extends ZendSearchLuceneTextExtractor {
     /**
      * @access private
      */
-    protected static function commandline($filename) {
+    protected static function commandline($filename)
+    {
         $pdftotext = trim(shell_exec('which pdftotext'));
-        return shell_exec($pdftotext.' '.escapeshellarg($filename).' -'); 
+        return shell_exec($pdftotext.' '.escapeshellarg($filename).' -');
     }
     
     
     /**
      * @access private
      */
-    protected static function pdf2text($filename) {
+    protected static function pdf2text($filename)
+    {
         $pdf = new PDF2Text();
         $pdf->setFilename($filename);
         $pdf->decodePDF();
         $content = $pdf->output();
-        if ( $content == '' ) {
+        if ($content == '') {
             // try with different multibyte setting
             $pdf->setUnicode(true);
             $pdf->decodePDF();
             $content = $pdf->output();
         }
-        return $content;    
+        return $content;
     }
 
     /**
@@ -99,18 +105,18 @@ class PdfDocumentExtractor extends ZendSearchLuceneTextExtractor {
      * @return  String|Boolean  Returns the path to the pdftotext binary, or 
      *                          boolean false if it cannot be found.
      */
-    protected static function get_binary_path() {
-        if ( self::$binary_location ) return self::$binary_location;
-        if ( defined('PDFTOTEXT_BINARY_LOCATION') ) {
+    protected static function get_binary_path()
+    {
+        if (self::$binary_location) {
+            return self::$binary_location;
+        }
+        if (defined('PDFTOTEXT_BINARY_LOCATION')) {
             self::$binary_location = PDFTOTEXT_BINARY_LOCATION;
-        } else if ( file_exists('/usr/bin/pdftotext') ) {
+        } elseif (file_exists('/usr/bin/pdftotext')) {
             self::$binary_location = '/usr/bin/pdftotext';
-        } else if ( file_exists('/usr/local/bin/pdftotext') ) {
+        } elseif (file_exists('/usr/local/bin/pdftotext')) {
             self::$binary_location = '/usr/local/bin/pdftotext';
         }
-        return self::$binary_location;        
+        return self::$binary_location;
     }
-
 }
-
-
